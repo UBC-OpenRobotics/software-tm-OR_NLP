@@ -2,27 +2,31 @@ from openai import OpenAI
 from abc import ABC, abstractmethod
 import json
 
-available_functions = {
-    # fill in the functions that the LM can call here
-    # function_name: str, function_name
-}
+class ParameterInfo:
+    def __init__(self, name: str, parameter_type: str, description: str):
+        self.name = name
+        self.type = parameter_type
+        self.description = description
+
+    def get_json(self) -> dict[str: str]:
+        return {"type": self.type, "description": self.description}
 
 class Parameters:
-    def __init__(self) -> None:
-        # TODO
-        self.parameters = {}
-    
+    def __init__(self, parameters: list[ParameterInfo]) -> None:
+        self.parameters = parameters
 
-class Tools:
+    def get_json(self) -> dict[str: str | dict]:
+        properties = {x.name: x.get_json for x in self.parameters}
+        return {"type": "object", "properties": properties}
+
+class Tool:
     def __init__(self, name: str, description: str, parameters: Parameters) -> None:
         self.name = name
         self.description = description
         self.parameters = parameters
 
-    def __str__(self) -> str:
-        # TODO
-        pass
-    
+    def get_json(self) -> dict[str: str | dict]:
+        return {"type": "function", "function": {"name": self.name, "description": self.description, "parameters": self.parameters.get_json()}}
 
 class RobotLM(ABC):
     @abstractmethod
@@ -36,9 +40,9 @@ class RobotLM(ABC):
     @abstractmethod
     def chat_with_function(self, message, tools) -> str:
         pass
-    
+
 class OpenAIChat(RobotLM):
-    def __init__(self, instructions: str, model: str, api_key: str = None) -> None:
+    def __init__(self, instructions: str, model: str, functions: dict, api_key: str = None):
         super().__init__(instructions)
         self.messages = [
             {
@@ -50,6 +54,7 @@ class OpenAIChat(RobotLM):
             raise Exception("No API key specified")
         self.client = OpenAI(api_key)
         self.model = model
+        self.available_functions = functions
 
     def chat(self, message) -> str:
         self.messages.append(
@@ -70,8 +75,8 @@ class OpenAIChat(RobotLM):
             }
         )
         return response['choices'][0]['message']
-    
-    def chat_with_function(self, message, tools) -> str:
+
+    def chat_with_function(self, message, tools: list[Tool]) -> str:
         self.messages.append(
             {
                 "role": "user",
@@ -82,7 +87,7 @@ class OpenAIChat(RobotLM):
             model=self.model,
             temperature = 0,
             messages = self.messages,
-            tools = str(tools),
+            tools = [tool.get_json() for tool in tools],
             tool_choice = "auto"
         )
         response_message = response['choices'][0]['message']
@@ -91,7 +96,7 @@ class OpenAIChat(RobotLM):
             self.messages.append(response_message)
             for tool_call in tool_calls:
                 function_name = tool_call.function.name
-                function_to_call = available_functions[function_name]
+                function_to_call = self.available_functions[function_name]
                 function_args = json.loads(tool_call.function.arguments)
                 function_response = function_to_call(**function_args)
                 self.messages.append(
@@ -110,4 +115,4 @@ class OpenAIChat(RobotLM):
         else:
             return response_message
 
-    
+
