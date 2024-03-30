@@ -1,0 +1,26 @@
+Setup
+• Locations:
+– Task location: The task takes place inside the Arena, but some commands may
+require the robot to go out. The Arena is in its nominal state for this task.
+– Start location: The robot starts outside the Arena. When the door opens, the
+robot moves towards the Instruction Point.
+– Instruction point: At the beginning of the test, as well as after finishing the first
+and second command, the robot moves to the Instruction Point.
+• People:
+– Operators: A Professional Operator (the referee) commands the robot to execute
+a task. Optionally, commands can be issued by a Non-Expert Operator, i.e. a person
+from the audience with no robotics background. In this case, the referee gives the
+goal of the command to the non-expert operator, who will then issue it to the robot
+in their own words. For example, the generated command might be “Bring me a coke
+from the kitchen.” then the non-expert operator will be told “The robot should bring
+you a coke, which is found in the kitchen.”, who then tells the robot “I want a coke.
+Go to the kitchen and get me one.” If the robot consistently fails to understand the
+non-expert operator (e.g. after two retries), teams can default to a custom operator.
+Procedure
+1. Instruction point: At least two hours before the test, the referees announce the location
+of the Instruction Point.
+2. Test start: The robot moves to the Instruction Point when the arena door is open.
+3. Command execution: The operator instructs the robot to execute a command and the
+robot performs the task.
+4. Back to the instruction point: The robot goes back to the Instruction Point and waits
+for the next command.

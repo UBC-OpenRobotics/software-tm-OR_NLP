@@ -1,0 +1,120 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "getLocation",
+            "description": "Get the current location",
+            "parameters": {}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "goTo",
+            "description": "Move the robot to a specified location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The location to move to"
+                    }
+                },
+                "required": ["location"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "moveForwards",
+            "description": "Move the robot forwards by a specified distance",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "metres": {
+                        "type": "number",
+                        "description": "The distance to move forwards in meters"
+                    }
+                },
+                "required": ["metres"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "turnLeft",
+            "description": "Turn the robot to the left by a specified angle",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "degrees": {
+                        "type": "number",
+                        "description": "The angle to turn left in degrees"
+                    }
+                },
+                "required": ["degrees"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "turnRight",
+            "description": "Turn the robot to the right by a specified angle",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "degrees": {
+                        "type": "number",
+                        "description": "The angle to turn right in degrees"
+                    }
+                },
+                "required": ["degrees"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "grabObject",
+            "description": "Grab an object using the robot's arm",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "object": {
+                        "type": "string",
+                        "description": "The object to grab"
+                    }
+                },
+                "required": ["object"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "releaseObject",
+            "description": "Release an object held by the robot's arm",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "object": {
+                        "type": "string",
+                        "description": "The object to release"
+                    }
+                },
+                "required": ["object"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "getObjectsFromCamera",
+            "description": "Get a list of objects detected by the robot's camera",
+            "parameters": {}
+        }
+    }
+]

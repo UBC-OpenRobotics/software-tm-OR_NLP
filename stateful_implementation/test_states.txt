@@ -1,0 +1,46 @@
+{
+  "states": [
+    {
+      "name": "Start",
+      "description": "Initial state where the robot is at the predefined location in the living room.",
+      "functions": ["grabObject"],
+      "next_states": ["Picking up the bag"],
+      "instructions": "1. Pick up the bag pointed at by the operator."
+    },
+    {
+      "name": "Picking up the bag",
+      "description": "State where the robot picks up the bag.",
+      "functions": ["grabObject"],
+      "next_states": ["Following the operator"],
+      "instructions": "1. The robot grabs the bag pointed at by the operator."
+    },
+    {
+      "name": "Following the operator",
+      "description": "State where the robot follows the operator towards the car.",
+      "functions": ["getLocation", "goTo"],
+      "next_states": ["Obstacles"],
+      "instructions": "1. The robot informs the operator when it's ready to follow. 2. The robot moves towards the operator's location."
+    },
+    {
+      "name": "Obstacles",
+      "description": "State where the robot navigates through obstacles.",
+      "functions": ["moveForwards", "turnLeft", "turnRight", "getObjectsFromCamera"],
+      "next_states": ["Optional goals", "Obstacles"],
+      "instructions": "1. The robot navigates around obstacles it encounters along the way. 2. It detects obstacles using its camera and adjusts its path accordingly."
+    },
+    {
+      "name": "Optional goals",
+      "description": "State where the robot can accomplish optional goals.",
+      "functions": ["goTo", "turnLeft", "turnRight"],
+      "next_states": ["End"],
+      "instructions": "1. The robot may choose to re-enter the arena by going back through the entrance. 2. It may join the queue in a manner that appears natural to the people in the queue."
+    },
+    {
+      "name": "End",
+      "description": "Final state where the task is completed.",
+      "functions": [],
+      "next_states": [],
+      "instructions": "1. The task is completed."
+    }
+  ]
+}
