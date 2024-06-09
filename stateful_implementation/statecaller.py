@@ -1,4 +1,4 @@
-from gptcaller import prompt
+# from gptcaller import prompt
 from filebrowser import file_browser
 import json
 
@@ -9,6 +9,7 @@ class StateGenerator:
     def __init__(self, ) -> None:
         # get the required files to start generating JSON
         # Generate state instructions
+        # open file in read mode
         with open("Generate_State_Instructions.txt", "r") as file:
             self.state_instructions = file.read()
 
@@ -17,11 +18,11 @@ class StateGenerator:
             text_tools = file.read()
             self.tools = json.loads(text_tools)
         
-    
+    # generate states through  
     def generate_states(self, task_file_name: str):
-        # import txt from instruction file
         with open(task_file_name, "r") as file:
             task_instructions = file.read() 
+        # prompt LLM w/ custom instructions + task instructions to generate states 
         return prompt(self.state_instructions + task_instructions + self.tools).choices[0].message.content
 
 class StateMachine:
@@ -80,7 +81,9 @@ if __name__ == "__main__":
     with open("test_states.txt", "r") as file:
         states = json.load(file)
 
+    # initiate state generator object
     state_generator = StateGenerator()
-    #states = state_generator.generate_states(chosen_file)
+    # get states based on selected file
+    states = state_generator.generate_states(chosen_file)
     state_machine = StateMachine(states, state_generator.tools)
-    state_machine.run()
+    # state_machine.run()

@@ -1,13 +1,13 @@
 from openai import OpenAI
-from gpt4all import GPT4All
-LOCAL_LLM = True
+# from gpt4all import GPT4All
+# LOCAL_LLM = False
 
-if LOCAL_LLM:
-    client = GPT4All(model_name="mistral-7b-openorca.gguf2.Q4_0.gguf", device="gpu")
-else:
-    with open("./OPEN_AI_KEY.txt", "r") as key_file:
-        OPEN_AI_KEY = key_file.read().strip()
-    client = OpenAI(api_key=OPEN_AI_KEY)
+# if LOCAL_LLM:
+#     client = GPT4All(model_name="mistral-7b-openorca.gguf2.Q4_0.gguf", device="gpu")
+# else:
+with open("./OPEN_AI_KEY.txt", "r") as key_file:
+    OPEN_AI_KEY = key_file.read().strip()
+client = OpenAI(api_key=OPEN_AI_KEY)
 
 
 GPT_MODEL = "gpt-4"
