@@ -1,11 +1,13 @@
-# from gptcaller import prompt
+from gptcaller import prompt
 from filebrowser import file_browser
 import json
+import os
 
 # TODO: add next state to transition to
 # TODO: for each state, make LLM choose from a set of options, and then transition to another state
 
 class StateGenerator:
+    # initialize object: set instructions and functions
     def __init__(self, ) -> None:
         # get the required files to start generating JSON
         # Generate state instructions
@@ -18,13 +20,24 @@ class StateGenerator:
             text_tools = file.read()
             self.tools = json.loads(text_tools)
         
-    # generate states through  
+    # generate states  
     def generate_states(self, task_file_name: str):
-        with open(task_file_name, "r") as file:
-            task_instructions = file.read() 
-        # prompt LLM w/ custom instructions + task instructions to generate states 
-        return prompt(self.state_instructions + task_instructions + self.tools).choices[0].message.content
-
+        # this is just a os-agnostic way of doing tasks/chosen_file
+        with open(os.path.join("tasks", task_file_name), "r") as key_file:
+            task_instructions = key_file.read() 
+         # construct messages for the prompt
+        messages = [
+            {"role": "system", "content": "You are an AI assistant helping to design a robot's decision-making process."},
+            {"role": "user", "content": self.state_instructions},
+            {"role": "user", "content": task_instructions},
+            {"role": "user", "content": json.dumps(self.tools)}
+        ]
+        # prompt LLM w/ custom (prompt) instructions + task instructions to generate states 
+        # prompt is fn in gptcaller.py
+        response = prompt(messages)
+        # print(response)
+        # return the content of the response
+        return response.choices[0].message.content
 class StateMachine:
     def __init__(self, states, tools) -> None:
         self.states = states["states"]
@@ -78,12 +91,13 @@ if __name__ == "__main__":
     # read console input to choose the specific task file
     chosen_file = file_browser()   
 
-    with open("test_states.txt", "r") as file:
-        states = json.load(file)
-
+    # with open("test_states.txt", "r") as file:
+    #     states = json.load(file)
     # initiate state generator object
     state_generator = StateGenerator()
     # get states based on selected file
     states = state_generator.generate_states(chosen_file)
+    print(states)
+    # create FSM based on generated states
     state_machine = StateMachine(states, state_generator.tools)
-    # state_machine.run()
+    state_machine.run()
