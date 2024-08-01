@@ -43,32 +43,34 @@ class StateMachine:
         self.states = states["states"]
         self.tools = tools
 
-        self.current_state = states[0]
+        self.current_state = self.states[2]
         self.observation_queue = []
         with open("State_Prompt.txt", "r") as prompt:
-            self.prompt = prompt.read()
+            self.prompt = prompt.read() # NOT USED CURRENTLY
 
     def run(self):
-        self.update_observation_queue()
-        observation = self.observation_queue.pop(0)
+        # self.update_observation_queue()
+        # observation = self.observation_queue.pop(0)
         tools = self.get_tools()
         description = self.current_state['description']
         instructions = self.current_state['instructions']
         states = self.current_state['next_states']
 
-        messages = []
-        messages.append({"role": "system", "content": f"""You are a robot butler. Your current situation is: {description}.
-        You currently notice the following things about your surroundings:
-        \"{observation}\""
+        messages = [
+            {"role": "system", "content": f"""You are a robot butler. Your current situation is: {description}.
+            You currently notice the following things about your surroundings:
+            \"{""}\""
 
-        You have a choice of functions to call. Afterwards, you must choose which state to transition to. Only transition to a state if you succeeded in completing all of the instructions:
-        \"{states}\""""})
-        messages.append({"role": "user", "content": f"""Here are your instructions:
-                         \"{instructions}\""""})
+            You have a choice of functions to call. Afterwards, you must choose which state to transition to. Only transition to a state if you succeeded in completing all of the instructions:
+             \"{states}\""""},
+            {"role": "user", "content": f"""Here are your instructions:
+            \"{instructions}\""""},
+            {"role": "user", "content": "Here are the available functions you can call:"},
+            {"role": "user", "content": json.dumps(self.tools)}]
         
-        response = prompt(messages, tools)
-
-        self.execute_function_call(response.choices[0].message, tools)
+        response = prompt(messages)
+        # self.execute_function_call(response.choices[0].message, tools)
+        return response.choices[0].message.content
         
     def update_observation_queue(self):
         # TODO: add external observations from robot to the queue for LLM to use
@@ -90,14 +92,21 @@ class StateMachine:
 if __name__ == "__main__":
     # read console input to choose the specific task file
     chosen_file = file_browser()   
-
-    # with open("test_states.txt", "r") as file:
-    #     states = json.load(file)
+    
     # initiate state generator object
     state_generator = StateGenerator()
     # get states based on selected file
-    states = state_generator.generate_states(chosen_file)
-    print(states)
+    # states = state_generator.generate_states(chosen_file)
+    # type(states)
+    # states = json.loads(states)
+    # print(states)
+    
+    with open("test_states.txt", "r") as file:
+        states = json.load(file)
+    
+    # print(states)
     # create FSM based on generated states
     state_machine = StateMachine(states, state_generator.tools)
-    state_machine.run()
+    # print("FSM created !!!!")
+    selected_function = state_machine.run()
+    print(selected_function)
