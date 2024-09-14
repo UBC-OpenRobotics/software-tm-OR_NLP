@@ -8,7 +8,7 @@ client = OpenAI(
     api_key=OPEN_AI_KEY
 )
 
-GPT_MODEL = "gpt-3.5-turbo-0125"
+GPT_MODEL = "gpt-4o"
 
 def prompt(messages, model=GPT_MODEL):
     try:
