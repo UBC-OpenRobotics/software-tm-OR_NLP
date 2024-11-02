@@ -1,7 +1,12 @@
 import speech_recognition as speech
+from openai import OpenAI
+from dotenv import load_dotenv
+import os
 
 class speechToText:
-    def convertToText():
+    
+
+    def listenForText(self):
         r = speech.Recognizer()
 
         # Adjusts sound threshold for speech detection, 0.15 by default
@@ -18,15 +23,34 @@ class speechToText:
                     r.adjust_for_ambient_noise(source, duration = 0.2)
                     audio = r.listen(source)
                     text = r.recognize_google(audio, language = 'en-US')
-                    print(text)
-                    break
                 except speech.RequestError as e:
                     print('Error: Bad Request')
                 
                 except speech.UnknownValueError:
                     print('Error: Value Unknown')
-    def isCommand(self, audioInput: str):
-        pass
 
+    def isCommand(audioInput: str) -> bool:
+        load_dotenv()
+        client = OpenAI(api_key=os.getenv("API_KEY"))
+        MODEL="gpt-4o"
+        completion = client.chat.completions.create(
+         model=MODEL,
+         messages=[
+           {"role": "system", "content": "You are a command detection bot"},
+           {"role": "user", "content": 
+            f"""You are a command detection bot and your purpose is to determine if the input, {audioInput},
+            is a command. If the given sentence is a command, return "True", if not, then return "False" Do not include any additional text that is not specified here and only return exactly
+            what is asked"""}
+         ]
+        )
+        isCommand = completion.choices[0].message.content
+        if isCommand.lower() == "true":
+            return True
+        elif isCommand.lower() == "false":
+            return False
+        else:
+            raise Exception(f"GPT Returned: {isCommand}")
 
-        
+if __name__ == "__main__":
+    stt = speechToText()
+    stt.listenForText()
