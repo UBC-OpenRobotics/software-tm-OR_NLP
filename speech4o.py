@@ -5,7 +5,6 @@ import os
 
 class speechToText:
     
-
     def listenForText(self):
         r = speech.Recognizer()
 
@@ -17,6 +16,7 @@ class speechToText:
         # r.recognizer_instance.pause_threshold = 0.8
 
         # Adjusts for ambient noise, then waits for noise. After that, api call to convert stt
+
         while True:
             with speech.Microphone() as source:
                 try:
@@ -39,11 +39,14 @@ class speechToText:
            {"role": "system", "content": "You are a command detection bot"},
            {"role": "user", "content": 
             f"""You are a command detection bot and your purpose is to determine if the input, {audioInput},
-            is a command. If the given sentence is a command, return "True", if not, then return "False" Do not include any additional text that is not specified here and only return exactly
+            is a command, or a request. If the given sentence is a command or request, return "True", if not, then return
+            "False" Do not include any additional text that is not specified here and only return exactly
             what is asked"""}
          ]
         )
+
         isCommand = completion.choices[0].message.content
+
         if isCommand.lower() == "true":
             return True
         elif isCommand.lower() == "false":
