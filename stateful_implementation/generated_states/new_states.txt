@@ -1,0 +1,55 @@
+{
+    "states": [
+        {
+            "name": "InitialState",
+            "description": "The robot is in its initial state, awaiting for the arena door to be open.",
+            "functions": ["getLocation"],
+            "instructions": [
+                "1. Use the getLocation function to confirm the robot is at the start location outside the Arena."
+            ],
+            "next_states": ["MoveToInstructionPoint"]
+        },
+        {
+            "name": "MoveToInstructionPoint",
+            "description": "Move to the Instruction Point inside the Arena after the door opens.",
+            "functions": ["getLocation", "moveForwards", "turnLeft", "turnRight", "goTo"],
+            "instructions": [
+                "1. Use the getLocation function to verify the current position of the robot.",
+                "2. Use the goTo function with the 'Instruction Point' as the location parameter to move towards the instruction point.",
+                "3. Use the moveForwards, turnLeft, and turnRight functions as corrective measures if the robot's path needs adjustment."
+            ],
+            "next_states": ["WaitForCommand", "MoveToInstructionPoint"]
+        },
+        {
+            "name": "WaitForCommand",
+            "description": "The robot is at the Instruction Point, waiting for a command from the operator.",
+            "functions": [],
+            "instructions": [
+                "1. Monitor for a command input from the operator."
+            ],
+            "next_states": ["ExecuteCommand"]
+        },
+        {
+            "name": "ExecuteCommand",
+            "description": "Execute the command provided by the operator.",
+            "functions": ["goTo", "grabObject", "releaseObject", "getObjectsFromCamera"],
+            "instructions": [
+                "1. Parse the command to understand the required task.",
+                "2. Use the goTo function to navigate to the specified location relevant to the task (e.g., the kitchen for a coke).",
+                "3. Use the getObjectsFromCamera function to identify objects at the location.",
+                "4. Use the grabObject function to grab the specified object if necessary.",
+                "5. Return to the Instruction Point using the goTo function and release the object using the releaseObject function if the task involves bringing back an object."
+            ],
+            "next_states": ["MoveToInstructionPoint", "ExecuteCommand"]
+        },
+        {
+            "name": "ReturnToInstructionPoint",
+            "description": "The robot returns to the Instruction Point after completing a command.",
+            "functions": ["goTo"],
+            "instructions": [
+                "1. Use the goTo function to navigate back to the Instruction Point, if not already there."
+            ],
+            "next_states": ["WaitForCommand"]
+        }
+    ]
+}
