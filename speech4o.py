@@ -2,10 +2,22 @@ import speech_recognition as speech
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import paho.mqtt.client as mqtt
+import json
 
 class speechToText:
     
+
     def listenForText(self):
+        BROKER = "mqtt.eclipseprojects.io" 
+        PORT = 1883
+
+        TOPIC = "robot_command"
+
+        client = mqtt.Client()
+
+        # Connect to the broker
+        client.connect(BROKER, PORT, 60)
         r = speech.Recognizer()
 
         # Adjusts sound threshold for speech detection, 0.15 by default
@@ -23,13 +35,24 @@ class speechToText:
                     r.adjust_for_ambient_noise(source, duration = 0.2)
                     audio = r.listen(source)
                     text = r.recognize_google(audio, language = 'en-US')
+                    print(text)
+                    if self.isCommand(text):
+                        print("This is a command")
+                        result = client.publish(TOPIC, text)
+                        status = result[0]
+                        if status == 0:
+                            print("Success")
+                        else:
+                            print("Failed")
+                    else:
+                        print("This is NOT a command")
                 except speech.RequestError as e:
                     print('Error: Bad Request')
                 
                 except speech.UnknownValueError:
-                    print('Error: Value Unknown')
+                    pass
 
-    def isCommand(audioInput: str) -> bool:
+    def isCommand(self, audioInput: str) -> bool:
         load_dotenv()
         client = OpenAI(api_key=os.getenv("API_KEY"))
         MODEL="gpt-4o"
