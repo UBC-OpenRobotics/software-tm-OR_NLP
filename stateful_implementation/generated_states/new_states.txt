@@ -1,55 +1,123 @@
 {
-    "states": [
-        {
-            "name": "InitialState",
-            "description": "The robot is in its initial state, awaiting for the arena door to be open.",
-            "functions": ["getLocation"],
-            "instructions": [
-                "1. Use the getLocation function to confirm the robot is at the start location outside the Arena."
-            ],
-            "next_states": ["MoveToInstructionPoint"]
-        },
-        {
-            "name": "MoveToInstructionPoint",
-            "description": "Move to the Instruction Point inside the Arena after the door opens.",
-            "functions": ["getLocation", "moveForwards", "turnLeft", "turnRight", "goTo"],
-            "instructions": [
-                "1. Use the getLocation function to verify the current position of the robot.",
-                "2. Use the goTo function with the 'Instruction Point' as the location parameter to move towards the instruction point.",
-                "3. Use the moveForwards, turnLeft, and turnRight functions as corrective measures if the robot's path needs adjustment."
-            ],
-            "next_states": ["WaitForCommand", "MoveToInstructionPoint"]
-        },
-        {
-            "name": "WaitForCommand",
-            "description": "The robot is at the Instruction Point, waiting for a command from the operator.",
-            "functions": [],
-            "instructions": [
-                "1. Monitor for a command input from the operator."
-            ],
-            "next_states": ["ExecuteCommand"]
-        },
-        {
-            "name": "ExecuteCommand",
-            "description": "Execute the command provided by the operator.",
-            "functions": ["goTo", "grabObject", "releaseObject", "getObjectsFromCamera"],
-            "instructions": [
-                "1. Parse the command to understand the required task.",
-                "2. Use the goTo function to navigate to the specified location relevant to the task (e.g., the kitchen for a coke).",
-                "3. Use the getObjectsFromCamera function to identify objects at the location.",
-                "4. Use the grabObject function to grab the specified object if necessary.",
-                "5. Return to the Instruction Point using the goTo function and release the object using the releaseObject function if the task involves bringing back an object."
-            ],
-            "next_states": ["MoveToInstructionPoint", "ExecuteCommand"]
-        },
-        {
-            "name": "ReturnToInstructionPoint",
-            "description": "The robot returns to the Instruction Point after completing a command.",
-            "functions": ["goTo"],
-            "instructions": [
-                "1. Use the goTo function to navigate back to the Instruction Point, if not already there."
-            ],
-            "next_states": ["WaitForCommand"]
-        }
-    ]
+  "states": [
+    {
+      "name": "start_location",
+      "description": "Robot waits outside the Arena.",
+      "functions": [
+        "getLocation",
+        "getObjectsFromCamera"
+      ],
+      "next_states": [
+        "move_to_test_location",
+        "start_location"
+      ],
+      "instructions": "Use getLocation to determine the current location. Verify surroundings using getObjectsFromCamera. Wait until the arena door is open and transition to move_to_test_location."
+    },
+    {
+      "name": "move_to_test_location",
+      "description": "Robot navigates to the testing area.",
+      "functions": [
+        "goTo"
+      ],
+      "next_states": [
+        "identify_table_cabinet"
+      ],
+      "instructions": "Call goTo with the specified location of the testing area to move the robot there. Transition to identify_table_cabinet after reaching the test location."
+    },
+    {
+      "name": "identify_table_cabinet",
+      "description": "Identify the table and cabinet based on known rough location.",
+      "functions": [
+        "getLocation",
+        "getObjectsFromCamera"
+      ],
+      "next_states": [
+        "decide_cabinet_door",
+        "identify_table_cabinet"
+      ],
+      "instructions": "Use getLocation to confirm the robot is in the rough location of the table and cabinet. Use getObjectsFromCamera to identify specific locations of table and cabinet. After identifying, transition to decide_cabinet_door."
+    },
+    {
+      "name": "decide_cabinet_door",
+      "description": "Decide if the cabinet door should remain closed or opened.",
+      "functions": [],
+      "next_states": [
+        "decide_objects",
+        "open_cabinet_door"
+      ],
+      "instructions": "Decide based on programmed criteria or human input if the cabinet door should remain closed for scoring additional points. If closed, transition to open_cabinet_door, otherwise transition to decide_objects."
+    },
+    {
+      "name": "open_cabinet_door",
+      "description": "Open the cabinet door if it is closed.",
+      "functions": [
+        "getObjectsFromCamera",
+        "grabObject",
+        "releaseObject",
+        "moveForwards",
+        "turnLeft",
+        "turnRight"
+      ],
+      "next_states": [
+        "decide_objects",
+        "open_cabinet_door_failed"
+      ],
+      "instructions": "Check if the cabinet door is within reach using getObjectsFromCamera. If reachable, use the arm's functions grabObject, moveForwards or turn functions if needed, and releaseObject to open the door. Transition to decide_objects. If the robot fails to open the door, transition to open_cabinet_door_failed."
+    },
+    {
+      "name": "open_cabinet_door_failed",
+      "description": "Request human assistance for opening the cabinet door.",
+      "functions": [],
+      "next_states": [
+        "decide_objects"
+      ],
+      "instructions": "Clearly state that the robot failed to open the cabinet door and request the referee or a human to open it. Transition to decide_objects."
+    },
+    {
+      "name": "decide_objects",
+      "description": "Decide if heavy or tiny objects are to be used.",
+      "functions": [],
+      "next_states": [
+        "move_objects",
+        "select_objects"
+      ],
+      "instructions": "Based on predefined criteria or human input, decide whether to use heavy or tiny objects. Transition to select_objects before moving objects."
+    },
+    {
+      "name": "select_objects",
+      "description": "Select objects from the table to move to the cabinet.",
+      "functions": [
+        "getObjectsFromCamera",
+        "grabObject",
+        "releaseObject",
+        "moveForwards",
+        "turnLeft",
+        "turnRight"
+      ],
+      "next_states": [
+        "move_objects",
+        "select_objects"
+      ],
+      "instructions": "Use getObjectsFromCamera to list objects on the table. Based on rules or pre-determined criteria, use grabObject and the movement/turning functions to grab an object. Progress to move_objects after selecting an object."
+    },
+    {
+      "name": "move_objects",
+      "description": "Move the selected objects from the table to the cabinet.",
+      "functions": [
+        "getLocation",
+        "goTo",
+        "grabObject",
+        "releaseObject",
+        "moveForwards",
+        "turnLeft",
+        "turnRight"
+      ],
+      "next_states": [
+        "decide_objects",
+        "select_objects",
+        "move_objects"
+      ],
+      "instructions": "Navigate to the targeted cabinet shelf using goTo and confirm position with getLocation. Place the object using releaseObject. If more objects are to be moved from the table, transition to select_objects, else transition to decide_objects for further decisions."
+    }
+  ]
 }

@@ -1,3 +1,6 @@
+# ignore API key file
+OPEN_AI_KEY.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
