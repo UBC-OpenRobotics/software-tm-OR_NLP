@@ -7,17 +7,11 @@ import json
 
 class speechToText:
     
-
+    def __init__(self, apiKeyGPT):
+        self.client = OpenAI(api_key=apiKeyGPT)
+        self.MODEL = "gpt-4o"
+        
     def listenForText(self):
-        BROKER = "mqtt.eclipseprojects.io" 
-        PORT = 1883
-
-        TOPIC = "robot_command"
-
-        client = mqtt.Client()
-
-        # Connect to the broker
-        client.connect(BROKER, PORT, 60)
         r = speech.Recognizer()
 
         # Adjusts sound threshold for speech detection, 0.15 by default
@@ -36,32 +30,26 @@ class speechToText:
                     audio = r.listen(source)
                     text = r.recognize_google(audio, language = 'en-US')
                     print(text)
+                    if text.lower() == 'stop' or text.lower() == 'start':
+                        print("Stop or start stated")
+
                     if self.isCommand(text):
                         print("This is a command")
-                        result = client.publish(TOPIC, text)
-                        status = result[0]
-                        if status == 0:
-                            print("Success")
-                        else:
-                            print("Failed")
                     else:
                         print("This is NOT a command")
                 except speech.RequestError as e:
                     print('Error: Bad Request')
                 
                 except speech.UnknownValueError:
-                    pass
+                    print("Did not hear")
 
     def isCommand(self, audioInput: str) -> bool:
-        load_dotenv()
-        client = OpenAI(api_key=os.getenv("API_KEY"))
-        MODEL="gpt-4o"
-        completion = client.chat.completions.create(
-         model=MODEL,
+        completion = self.client.chat.completions.create(
+         model=self.MODEL,
          messages=[
            {"role": "system", "content": "You are a command detection bot"},
            {"role": "user", "content": 
-            f"""You are a command detection bot and your purpose is to determine if the input, {audioInput},
+            f"""You are a command detection bot and your purpose is to determine if the input, "{audioInput}",
             is a command, or a request. If the given sentence is a command or request, return "True", if not, then return
             "False" Do not include any additional text that is not specified here and only return exactly
             what is asked"""}
@@ -76,7 +64,23 @@ class speechToText:
             return False
         else:
             raise Exception(f"GPT Returned: {isCommand}")
+            
+    def conversationBot(self, audioInput: str) -> str:
+        completion = self.client.chat.completions.create(
+         model=self.MODEL,
+         messages=[
+           {"role": "system", "content": "You are a friendly person"},
+           {"role": "user", "content": 
+            f"""You are a friendly person, and you're purpose is to generate a response to this, it can be laughter if it is a joke,
+            or it can be an answer to a question, or it can be simply a response to a statement. The other person has said {audioInput}.
+            Make sure you only use text"""}
+         ]
+        )
+        response = completion.choices[0].message.content
+        print(response)
+        return response
 
 if __name__ == "__main__":
-    stt = speechToText()
+    load_dotenv()
+    stt = speechToText(apiKeyGPT=os.getenv("API_KEY"))
     stt.listenForText()
