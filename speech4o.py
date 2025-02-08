@@ -2,6 +2,17 @@ import speech_recognition as speech
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import paho.mqtt.client as mqtt
+import json
+
+
+# MQTT Configuration
+BROKER_ADDRESS = "localhost" 
+TOPIC = "robot_commands"
+
+# Initialize MQTT client
+mqtt_client = mqtt.Client()
+mqtt_client.connect(BROKER_ADDRESS, 1883, 60)
 
 class speechToText:
     
@@ -53,7 +64,17 @@ class speechToText:
             return False
         else:
             raise Exception(f"GPT Returned: {isCommand}")
+           
+
+def publish_command(self, command_text):
+    """Publishes Start/Stop command to the MQTT topic."""
+    command = {"command": command_text}
+    payload = json.dumps(command)
+    mqtt_client.publish(TOPIC, payload)
+    print(f"Published command: {payload}")
+    
 
 if __name__ == "__main__":
     stt = speechToText()
     stt.listenForText()
+
