@@ -1,29 +1,27 @@
 from openai import OpenAI
-from gpt4all import GPT4All
-LOCAL_LLM = True
+# read API key
+with open("./OPEN_AI_KEY.txt", "r") as key_file:
+    OPEN_AI_KEY = key_file.read().strip()
 
-if LOCAL_LLM:
-    client = GPT4All(model_name="mistral-7b-openorca.gguf2.Q4_0.gguf", device="gpu")
-else:
-    with open("./OPEN_AI_KEY.txt", "r") as key_file:
-        OPEN_AI_KEY = key_file.read().strip()
-    client = OpenAI(api_key=OPEN_AI_KEY)
+# set API key
+client = OpenAI(
+    api_key=OPEN_AI_KEY
+)
 
+GPT_MODEL = "gpt-4o"
 
-GPT_MODEL = "gpt-4"
-
-def prompt(messages, tools=None, tool_choice=None, model=GPT_MODEL):
+def prompt(messages, model=GPT_MODEL):
     try:
         response = client.chat.completions.create(
             model=model,
-            messages=messages,
-            tools=tools,
-            tool_choice=tool_choice
+            messages=messages
         )
+        return response
     except Exception as e:
         print("Unable to generate ChatCompletion response")
         print(f"Exception: {e}")
         return e
+
 
 # def prompt(prompt: str):
 #     return client.chat.completions.create(
