@@ -2,46 +2,43 @@ import speech_recognition as speech
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-import paho.mqtt.client as mqtt
 import json
+import rclpy
+from rclpy.node import Node
+from audio_common_msgs.msg import AudioData
 
 class speechToText:
     
     def __init__(self, apiKeyGPT):
+        super().__init__('speech_to_text')
+        
         self.client = OpenAI(api_key=apiKeyGPT)
         self.MODEL = "gpt-4o"
+
+        self.subscription = self.create_subscription(
+            AudioData,
+            '/audio',
+            self.listenForText,
+            10
+        )
+        self.r = speech.Recognizer()
         
-    def listenForText(self):
-        r = speech.Recognizer()
+    def listenForText(self, msg):
+        try:
+            audio = self.r.AudioData(msg.data, sample_rate=16000, sample_width=2)
+            text = self.r.recognize_google(audio, language = 'en-US')
+            print(text)
 
-        # Adjusts sound threshold for speech detection, 0.15 by default
-        # Values between 0 and 1, lower values means faster adjustment but may miss words
-        # r.recognizer_instance.dynamic_energy_adjustment_damping = 0.15
-
-        # Min length of silence to register end of phrase
-        # r.recognizer_instance.pause_threshold = 0.8
-
-        # Adjusts for ambient noise, then waits for noise. After that, api call to convert stt
-
-        while True:
-            with speech.Microphone() as source:
-                try:
-                    r.adjust_for_ambient_noise(source, duration = 0.2)
-                    audio = r.listen(source)
-                    text = r.recognize_google(audio, language = 'en-US')
-                    print(text)
-                    if text.lower() == 'stop' or text.lower() == 'start':
-                        print("Stop or start stated")
-
-                    if self.isCommand(text):
-                        print("This is a command")
-                    else:
-                        print("This is NOT a command")
-                except speech.RequestError as e:
+            if self.isCommand(text):
+                print("This is a command")
+            else:
+                print("This is NOT a command")
+        except speech.RequestError as e:
                     print('Error: Bad Request')
                 
-                except speech.UnknownValueError:
+        except speech.UnknownValueError:
                     print("Did not hear")
+        
 
     def isCommand(self, audioInput: str) -> bool:
         completion = self.client.chat.completions.create(
@@ -81,6 +78,7 @@ class speechToText:
         return response
 
 if __name__ == "__main__":
+    rclpy.init()
     load_dotenv()
-    stt = speechToText(apiKeyGPT=os.getenv("API_KEY"))
-    stt.listenForText()
+    node = speechToText(apiKeyGPT=os.getenv("API_KEY"))
+    rclpy.spin(node)
